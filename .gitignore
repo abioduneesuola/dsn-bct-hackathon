@@ -10,3 +10,10 @@ data/
 *.csv
 *.json
 *.parquet
+# Data files
+*.tar
+*.zip
+*.jsonl
+data/
+__MACOSX/
+
