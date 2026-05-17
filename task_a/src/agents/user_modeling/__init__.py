@@ -145,7 +145,7 @@ def get_or_build_profile(user_id: str) -> dict:
     print(f"🔍 Building profile for: {user_id}")
     reviews = load_user_reviews(user_id)
     if not reviews:
-        print(f"❌ No reviews found for user: {user_id}")
+        print(f"The reviews written by user: {user_id} are not rich enough in context, please select another user")
         return {}
 
     profile = build_user_profile(user_id, reviews)
