@@ -8,14 +8,12 @@ client = Groq(api_key=GROQ_API_KEY)
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-def load_user_reviews(user_id: str, max_reviews: int = 20, min_review_length: int = 50) -> list[dict]:
+def load_user_reviews(user_id: str, min_review_length: int = 50) -> list[dict]:
     """Loads a user's quality review history from the Amazon dataset."""
     reviews = []
     try:
         with gzip.open(DATASET_PATH, 'rt', encoding='utf-8') as f:
             for line in f:
-                if len(reviews) >= max_reviews:
-                    break
                 record = json.loads(line)
                 if record.get("reviewerID") == user_id:
                     text = record.get("reviewText", "")
@@ -94,9 +92,9 @@ Extract the following and respond in exact JSON format with no extra text:
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="gpt-oss-120b",
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.1
+            temperature=0.1 
         )
         content = response.choices[0].message.content.strip()
         if content.startswith("```"):
