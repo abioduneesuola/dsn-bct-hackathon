@@ -8,14 +8,12 @@ client = Groq(api_key=GROQ_API_KEY)
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-def load_user_reviews(user_id: str, max_reviews: int = 100, min_review_length: int = 50) -> list[dict]:
+def load_user_reviews(user_id: str, min_review_length: int = 50) -> list[dict]:
     """Loads a user's quality review history from the Amazon dataset."""
     reviews = []
     try:
         with gzip.open(DATASET_PATH, 'rt', encoding='utf-8') as f:
             for line in f:
-                if len(reviews) >= max_reviews:
-                    break
                 record = json.loads(line)
                 if record.get("reviewerID") == user_id:
                     text = record.get("reviewText", "")
