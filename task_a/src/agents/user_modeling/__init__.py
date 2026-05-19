@@ -81,43 +81,51 @@ Analyze these product reviews written by the same user and extract their behavio
 Reviews:
 {reviews_text}
 
-Extract the following and respond in exact JSON format with no extra text:
+Respond ONLY with a valid JSON object. No explanation, no markdown, no extra text.
+All string values must use only single sentences with no special characters or inner quotes.
+
 {{
     "tone": "one of: enthusiastic, critical, balanced, casual, formal",
     "vocabulary_level": "one of: simple, moderate, sophisticated",
-    "rating_pattern": "one of: generous (usually high), harsh (usually low), balanced (varied)",
-    "topics": "comma separated list of topics/themes they care about",
-    "writing_style": "2 sentence description of how they write",
-    "common_phrases": "3-5 phrases or words they commonly use"
+    "rating_pattern": "one of: generous, harsh, balanced",
+    "topics": "comma separated topics",
+    "writing_style": "one sentence description only",
+    "common_phrases": "3 to 5 words or short phrases only"
 }}
 """
 
-    try:
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.1
-        )
-        content = response.choices[0].message.content.strip()
-        # Strip markdown code blocks
-        if content.startswith("```"):
-            content = content.split("```")[1]
-            if content.startswith("json"):
-                content = content[4:]
-        content = content.strip().replace("```", "").strip()
-        # NEW: Extract JSON object even if wrapped in extra text
-        start = content.find("{")
-        end = content.rfind("}") + 1
-        if start != -1 and end != 0:
-            content = content[start:end]
-        profile = json.loads(content)
-        profile["user_id"] = user_id
-        profile["review_count"] = len(reviews)
-        profile["avg_rating"] = round(avg_rating, 2)
-        return profile
-    except Exception as e:
-        print(f"❌ Profile building error: {e}")
-        return {}
+    for attempt in range(3):
+        try:
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a JSON generator. You only output valid JSON. Never include markdown, code blocks, or explanations. Never use double quotes inside string values."
+                    },
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.1
+            )
+            content = response.choices[0].message.content.strip()
+            if content.startswith("```"):
+                content = content.split("```")[1]
+                if content.startswith("json"):
+                    content = content[4:]
+            content = content.strip().replace("```", "").strip()
+            start = content.find("{")
+            end = content.rfind("}") + 1
+            if start != -1 and end != 0:
+                content = content[start:end]
+            profile = json.loads(content)
+            profile["user_id"] = user_id
+            profile["review_count"] = len(reviews)
+            profile["avg_rating"] = round(avg_rating, 2)
+            return profile
+        except Exception as e:
+            print(f"❌ Profile building error (attempt {attempt+1}): {e}")
+            if attempt == 2:
+                return {}
 
 
 def save_user_profile(profile: dict) -> bool:
