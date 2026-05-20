@@ -20,8 +20,7 @@ Candidate Businesses:
 Your task:
 1. REASON: Think step by step about which businesses best match this user's preferences
 2. RANK: Order the top 5 businesses from best to worst fit
-3. EXPLAIN: Give a personalized reason for each recommendation, addressing the user directly as "you" — never say "the user", always say "you". Also make sure you are concise to only two sentences.
-
+3. EXPLAIN: Give a personalized reason in Nigerian Pidgin English for each recommendation, addressing the user directly as "you" — never say "the user". Use Pidgin naturally
 Respond in exact JSON format with no extra text:
 {{
     "reasoning": "your step by step thinking about what this user needs",
