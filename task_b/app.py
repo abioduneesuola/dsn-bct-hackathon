@@ -27,6 +27,20 @@ st.markdown("""
         border-right: 1px solid #ffffff10;
     }
 
+    button[data-testid="stSidebarNavToggle"] {
+        color: #d4a574 !important;
+        background: #2d2d2d !important;
+        border: 1px solid #d4a57440 !important;
+        border-radius: 8px !important;
+    }
+
+    button[data-testid="collapsedControl"] {
+        color: #d4a574 !important;
+        background: #2d2d2d !important;
+        border: 1px solid #d4a57440 !important;
+        border-radius: 8px !important;
+    }
+
     .hero {
         background: linear-gradient(135deg, #2d2d2d 0%, #4a3728 50%, #2d2d2d 100%);
         padding: 3rem;
@@ -171,30 +185,6 @@ st.markdown("""
         margin-bottom: 0.8rem;
     }
 
-    .user-btn {
-        background: #ffffff10;
-        border: 1px solid #ffffff20;
-        border-radius: 8px;
-        color: #e0e0e0;
-        padding: 0.5rem 0.8rem;
-        font-size: 0.8rem;
-        margin-bottom: 0.3rem;
-        cursor: pointer;
-        width: 100%;
-        text-align: left;
-    }
-
-    .active-user-badge {
-        background: #f5f0eb;
-        border: 1px solid #d4a574;
-        border-radius: 8px;
-        padding: 0.5rem 0.8rem;
-        font-size: 0.8rem;
-        color: #4a3728;
-        margin-bottom: 1rem;
-        font-family: monospace;
-    }
-
     div[data-testid="stButton"] button {
         border-radius: 10px;
         font-weight: 500;
@@ -262,6 +252,7 @@ with st.sidebar:
         for u in st.session_state.sample_users:
             if st.button(f"◈ {u[:22]}...", key=f"u_{u}", use_container_width=True):
                 st.session_state.user_id = u
+                st.session_state.selected_user_preview = u
                 st.session_state.conversation = []
                 st.session_state.messages = []
                 st.session_state.reasoning_traces = []
@@ -271,7 +262,7 @@ with st.sidebar:
 
     st.divider()
     st.markdown("<div class='sidebar-header'>✦ Manual Entry</div>", unsafe_allow_html=True)
-    new_id = st.text_input("User ID", placeholder="paste ID here", label_visibility="collapsed")
+    new_id = st.text_input("User ID", value=st.session_state.get("selected_user_preview", ""), placeholder="paste ID here", label_visibility="collapsed")
     if st.button("Use this ID", use_container_width=True) and new_id:
         st.session_state.user_id = new_id
         st.session_state.conversation = []
@@ -297,12 +288,11 @@ with col_chat:
     st.markdown("""
     <div class='hero'>
         <div class='hero-badge'>✦ Powered by Twinn AI</div>
-        <h1>Discover Your Next Favourite Place</h1>
-        <p>Conversational recommendations tailored to your unique taste</p>
+        <h1>Make we find you the place wey go sweet your belle</h1>
+        <p>Recommendations wey fit you well well. E go jus be like say we don sabi you tey tey!</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Chat history
     if not st.session_state.messages:
         st.markdown("""
         <div style='text-align:center; padding: 3rem; color: #a09080;'>
@@ -324,7 +314,6 @@ with col_chat:
 
     st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
-    # Input
     with st.form("chat_form", clear_on_submit=True):
         col_input, col_btn = st.columns([5, 1])
         with col_input:
@@ -353,7 +342,6 @@ with col_chat:
         st.rerun()
 
 with col_right:
-    # Agent reasoning
     st.markdown("#### 🔬 Agent Reasoning")
     if st.session_state.reasoning_traces:
         trace_text = "\n".join(st.session_state.reasoning_traces)
@@ -363,7 +351,6 @@ with col_right:
 
     st.markdown("<div style='height:1.5rem'></div>", unsafe_allow_html=True)
 
-    # User profile
     st.markdown("#### 👁 Taste Profile")
     profile = st.session_state.profile
     if profile and profile.get("favorite_categories"):
@@ -381,7 +368,6 @@ with col_right:
 
     st.markdown("<div style='height:1.5rem'></div>", unsafe_allow_html=True)
 
-    # Recommendations
     st.markdown("#### ✦ Top Picks")
     if st.session_state.recommendations:
         for rec in st.session_state.recommendations:
