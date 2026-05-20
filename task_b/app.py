@@ -344,8 +344,8 @@ with col_chat:
 with col_right:
     st.markdown("#### 🔬 Agent Reasoning")
     if st.session_state.reasoning_traces:
-        trace_text = "\n".join(st.session_state.reasoning_traces)
-        st.markdown(f"<div class='reasoning-box'>{trace_text}</div>", unsafe_allow_html=True)
+        trace_items = "".join([f"<div style='margin-bottom:0.4rem'>→ {step}</div>" for step in st.session_state.reasoning_traces])
+        st.markdown(f"<div class='reasoning-box'>{trace_items}</div>", unsafe_allow_html=True)
     else:
         st.markdown("<div class='reasoning-box' style='color:#666'>Reasoning trace appears here during recommendations...</div>", unsafe_allow_html=True)
 
