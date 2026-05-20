@@ -301,7 +301,7 @@ with col_chat:
                 Start a conversation
             </div>
             <div style='font-size:0.9rem'>
-                Tell me what you're in the mood for, or let me surprise you
+                Follow me yarn wetin you dey in the mood for, abi make I kukuma surprise you
             </div>
         </div>
         """, unsafe_allow_html=True)
