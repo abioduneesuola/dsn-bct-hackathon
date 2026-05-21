@@ -2,6 +2,10 @@ import json
 import gzip
 from groq import Groq
 from supabase import create_client
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from config import GROQ_API_KEY, SUPABASE_URL, SUPABASE_KEY, DATASET_PATH
 
 client = Groq(api_key=GROQ_API_KEY)
@@ -42,6 +46,80 @@ def get_product_context(product_id: str, max_reviews: int = 5) -> dict:
     return product_info
 
 
+def find_product_by_description(description: str) -> dict:
+    """
+    Finds the closest matching product in the dataset based on a text description.
+    Uses LLM to match description against product summaries.
+    """
+    print(f"🔍 Searching for product matching: {description}")
+
+    sample_products = []
+    try:
+        with gzip.open(DATASET_PATH, 'rt', encoding='utf-8') as f:
+            seen = set()
+            for line in f:
+                if len(sample_products) >= 100:
+                    break
+                record = json.loads(line)
+                pid = record.get("asin")
+                summary = record.get("summary", "")
+                style = record.get("style", {})
+                if pid and pid not in seen and summary:
+                    seen.add(pid)
+                    sample_products.append({
+                        "product_id": pid,
+                        "summary": summary,
+                        "style": str(style),
+                        "actual_rating": record.get("overall"),
+                        "actual_review": record.get("reviewText", "")
+                    })
+    except Exception as e:
+        print(f"❌ Error scanning dataset: {e}")
+        return {}
+
+    if not sample_products:
+        return {}
+
+    products_text = "\n".join([
+        f"{i+1}. ID: {p['product_id']} | Summary: {p['summary']} | Style: {p['style']}"
+        for i, p in enumerate(sample_products)
+    ])
+
+    prompt = f"""
+A user is looking for a product matching this description: "{description}"
+
+Here are available products:
+{products_text}
+
+Which product best matches the description? Respond with ONLY the product ID, nothing else.
+If no product matches, respond with NONE.
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1
+        )
+        matched_id = response.choices[0].message.content.strip()
+
+        if len(matched_id) > 20 or " " in matched_id or matched_id == "NONE":
+            print(f"⚠️ No clean match found for: {description}")
+            return {}
+
+        print(f"✅ Matched product ID: {matched_id}")
+
+        for p in sample_products:
+            if p["product_id"] == matched_id:
+                return p
+
+        return get_product_context(matched_id)
+
+    except Exception as e:
+        print(f"❌ Product matching error: {e}")
+        return {}
+
+
 def get_unseen_products(user_id: str, n: int = 5) -> list[dict]:
     """Gets RANDOM products the user has NOT reviewed for evaluation."""
     import random
@@ -60,7 +138,7 @@ def get_unseen_products(user_id: str, n: int = 5) -> list[dict]:
                 record = json.loads(line)
                 pid = record.get("asin")
                 text = record.get("reviewText", "")
-                if (pid not in reviewed and 
+                if (pid not in reviewed and
                     pid not in [p["product_id"] for p in all_candidates] and
                     len(text) >= 50):
                     all_candidates.append({
@@ -71,7 +149,6 @@ def get_unseen_products(user_id: str, n: int = 5) -> list[dict]:
                         "actual_review": text
                     })
 
-        # Random sample from candidates
         return random.sample(all_candidates, min(n, len(all_candidates)))
 
     except Exception as e:
@@ -147,6 +224,10 @@ def simulate_review(user_profile: dict, product: dict) -> dict:
             if content.startswith("json"):
                 content = content[4:]
         content = content.strip().replace("```", "").strip()
+        start = content.find("{")
+        end = content.rfind("}") + 1
+        if start != -1 and end != 0:
+            content = content[start:end]
         result = json.loads(content)
         result["user_id"] = user_profile.get("user_id") or user_profile.get("id")
         result["product_id"] = product.get("product_id")
