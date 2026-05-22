@@ -41,6 +41,17 @@ st.markdown("""
         border-radius: 8px !important;
     }
 
+    button[data-testid="stSidebarNavToggle"] svg {
+        color: #d4a574 !important;
+        fill: #d4a574 !important;
+    }
+
+    section[data-testid="stSidebar"] button {
+        color: #d4a574 !important;
+        background: #3d3d3d !important;
+        border-radius: 8px !important;
+    }
+
     .hero {
         background: linear-gradient(135deg, #2d2d2d 0%, #4a3728 50%, #2d2d2d 100%);
         padding: 3rem;
@@ -350,8 +361,8 @@ with col_chat:
     st.markdown("""
     <div class='hero'>
         <div class='hero-badge'>✦ Powered by Twinn AI</div>
-        <h1>Discover Your Next Favourite Place</h1>
-        <p>Conversational recommendations tailored to your unique taste</p>
+        <h1>Make we find you the place wey go sweet your belle</h1>
+        <p>Recommendations wey fit you well well. E go jus be like say we don sabi you tey tey!</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -363,7 +374,7 @@ with col_chat:
                 Start a conversation
             </div>
             <div style='font-size:0.9rem'>
-                Tell me what you're in the mood for, or let me surprise you
+                Follow me yarn wetin you dey in the mood for, abi make I kukuma surprise you
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -381,7 +392,7 @@ with col_chat:
         with col_input:
             user_input = st.text_input(
                 "Message",
-                placeholder="What are you in the mood for tonight?",
+                placeholder="Make we rub minds on wetin you dey find",
                 label_visibility="collapsed"
             )
         with col_btn:
@@ -404,7 +415,6 @@ with col_chat:
         st.rerun()
 
 with col_right:
-    # Tabs for different content
     tab1, tab2, tab3 = st.tabs(["🔬 Reasoning", "✦ Top Picks", "📚 Book Picks"])
 
     with tab1:
@@ -451,7 +461,7 @@ with col_right:
 
     with tab3:
         st.markdown("#### 📚 Book Picks")
-        st.markdown("<div style='color:#888; font-size:0.85rem; margin-bottom:1rem'>Books you might enjoy based on your taste profile</div>", unsafe_allow_html=True)
+        st.markdown("<div style='color:#888; font-size:0.85rem; margin-bottom:1rem'>You go enjoy dis books based on your taste profile o</div>", unsafe_allow_html=True)
 
         if st.button("✦ Find Books For Me", use_container_width=True):
             with st.spinner("📚 Finding books that match your vibe..."):
